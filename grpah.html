@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detailed Packet Sniffer Flowchart</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 2rem 0;
+            background-color: #f4f7f9;
+        }
+        #flowchartCanvas {
+            border: 1px solid #d1d9e0;
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="flowchartCanvas"></canvas>
+
+    <script>
+        window.onload = function() {
+            const canvas = document.getElementById('flowchartCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // --- Configuration ---
+            const config = {
+                width: 1000,
+                height: 1450,
+                padding: 40,
+                boxWidth: 260,
+                boxHeight: 75,
+                font: '14px Arial',
+                textColor: '#2c3e50',
+                lineColor: '#78909c',
+                arrowHeadSize: 8,
+                vGap: 80,
+                hGap: 250,
+                // Colors
+                startColor: '#fafafa', startBorder: '#e0e0e0',
+                dataColor: '#e3f2fd', dataBorder: '#90caf9',
+                processColor: '#e0f7fa', processBorder: '#80deea',
+                decisionColor: '#fff8e1', decisionBorder: '#ffecb3',
+                verdictSafeColor: '#e8f5e9', verdictSafeBorder: '#a5d6a7',
+                verdictUnsafeColor:'#ffebee', verdictUnsafeBorder:'#ef9a9a',
+                mlColor: '#f3e5f5', mlBorder: '#ce93d8',
+                endColor: '#455a64', endBorder: '#37474f'
+            };
+
+            canvas.width = config.width;
+            canvas.height = config.height;
+
+            // --- Drawing Utility Functions ---
+            function drawShape(x, y, width, height, color, borderColor, text, shape = 'rect') {
+                ctx.fillStyle = color;
+                ctx.strokeStyle = borderColor;
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                if (shape === 'rect') ctx.roundRect(x, y, width, height, 10);
+                else if (shape === 'diamond') {
+                    const w = width; const h = height;
+                    ctx.moveTo(x + w / 2, y); ctx.lineTo(x + w, y + h / 2);
+                    ctx.lineTo(x + w / 2, y + h); ctx.lineTo(x, y + h / 2);
+                    ctx.closePath();
+                } else if (shape === 'parallelogram') {
+                    const skew = 20;
+                    ctx.moveTo(x + skew, y); ctx.lineTo(x + width, y);
+                    ctx.lineTo(x + width - skew, y + height); ctx.lineTo(x, y + height);
+                    ctx.closePath();
+                }
+                ctx.fill();
+                ctx.stroke();
+                drawText(text, x + width / 2, y + height / 2);
+            }
+
+            function drawText(text, x, y) {
+                ctx.fillStyle = (text.includes("Print Result")) ? '#fff' : config.textColor;
+                ctx.font = config.font;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                const lines = text.split('<br>');
+                const lineHeight = 17;
+                let startY = y - (lines.length - 1) * lineHeight / 2;
+                lines.forEach(line => {
+                    ctx.fillText(line, x, startY);
+                    startY += lineHeight;
+                });
+            }
+
+            function drawArrow(from, to, label = '') {
+                const { x: fromX, y: fromY } = from;
+                const { x: toX, y: toY } = to;
+                ctx.strokeStyle = config.lineColor;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(fromX, fromY);
+                ctx.lineTo(toX, toY);
+                ctx.stroke();
+                const angle = Math.atan2(toY - fromY, toX - fromX);
+                ctx.beginPath();
+                ctx.moveTo(toX, toY);
+                ctx.lineTo(toX - config.arrowHeadSize * Math.cos(angle - Math.PI / 6), toY - config.arrowHeadSize * Math.sin(angle - Math.PI / 6));
+                ctx.lineTo(toX - config.arrowHeadSize * Math.cos(angle + Math.PI / 6), toY - config.arrowHeadSize * Math.sin(angle + Math.PI / 6));
+                ctx.closePath();
+                ctx.fillStyle = config.lineColor;
+                ctx.fill();
+                if (label) {
+                    ctx.font = 'bold 13px Arial';
+                    ctx.fillStyle = '#424242';
+                    ctx.fillText(label, (fromX + toX) / 2, (fromY + toY) / 2 - 10);
+                }
+            }
+            
+            // --- Flowchart Layout & Drawing ---
+            ctx.font = 'bold 32px Arial';
+            ctx.fillStyle = '#000';
+            ctx.textAlign = 'center';
+            ctx.fillText('Detailed Packet Sniffer Logic Flowchart', config.width / 2, config.padding);
+
+            let currentY = config.padding + 100;
+            const centerX = config.width / 2;
+            const leftX = centerX - config.hGap;
+            const rightX = centerX + config.hGap;
+
+            // --- Row 1: Start ---
+            const startNode = { x: centerX - config.boxWidth / 2, y: currentY };
+            drawShape(startNode.x, startNode.y, config.boxWidth, config.boxHeight, config.startColor, config.startBorder, 'Start Sniffing on<br>Ports 53, 80, 443');
+            currentY += config.boxHeight + config.vGap;
+
+            // --- Row 2: Parse ---
+            const parseNode = { x: centerX - config.boxWidth / 2, y: currentY };
+            drawShape(parseNode.x, parseNode.y, config.boxWidth, config.boxHeight, config.dataColor, config.dataBorder, 'Parse Packet for<br>Domain & Protocol', 'parallelogram');
+            drawArrow({x: startNode.x + config.boxWidth/2, y: startNode.y + config.boxHeight}, {x: parseNode.x + config.boxWidth/2, y: parseNode.y});
+            currentY += config.boxHeight + config.vGap;
+
+            // --- Row 3: Triage ---
+            const decision1 = { x: centerX - config.boxWidth / 2, y: currentY };
+            drawShape(decision1.x, decision1.y, config.boxWidth, config.boxHeight, config.decisionColor, config.decisionBorder, 'Domain in<br>Hardcoded Lists?', 'diamond');
+            drawArrow({x: parseNode.x + config.boxWidth/2, y: parseNode.y + config.boxHeight}, {x: decision1.x + config.boxWidth/2, y: decision1.y});
+            
+            // --- Row 4: Feature Extraction ---
+            currentY += config.boxHeight + config.vGap;
+            const process2 = { x: centerX - config.boxWidth / 2, y: currentY };
+            drawShape(process2.x, process2.y, config.boxWidth, config.boxHeight, config.processColor, config.processBorder, 'Calculate Lexical Features<br>(Entropy, Ratios, etc.)');
+            drawArrow({x: decision1.x + config.boxWidth/2, y: decision1.y + config.boxHeight}, {x: process2.x + config.boxWidth/2, y: process2.y}, 'No');
+            currentY += config.boxHeight + config.vGap;
+
+            // --- Row 5: ML Prediction ---
+            const mlNode = { x: centerX - config.boxWidth / 2, y: currentY };
+            drawShape(mlNode.x, mlNode.y, config.boxWidth, config.boxHeight, config.mlColor, config.mlBorder, 'Predict Probabilities<br>(Benign vs. Malware)');
+            drawArrow({x: process2.x + config.boxWidth/2, y: process2.y + config.boxHeight}, {x: mlNode.x + config.boxWidth/2, y: mlNode.y});
+            currentY += config.boxHeight + config.vGap;
+
+            // --- Row 6: Confidence Check ---
+            const decision2 = { x: centerX - config.boxWidth / 2, y: currentY };
+            drawShape(decision2.x, decision2.y, config.boxWidth, config.boxHeight, config.decisionColor, config.decisionBorder, 'Is Confidence > 0.6?', 'diamond');
+            drawArrow({x: mlNode.x + config.boxWidth/2, y: mlNode.y + config.boxHeight}, {x: decision2.x + config.boxWidth/2, y: decision2.y});
+            currentY += config.boxHeight + config.vGap;
+            
+            // --- Row 7: Protocol Fallback ---
+            const decision3 = { x: centerX - config.boxWidth / 2, y: currentY };
+            drawShape(decision3.x, decision3.y, config.boxWidth, config.boxHeight, config.decisionColor, config.decisionBorder, 'Protocol Fallback', 'diamond');
+            drawArrow({x: decision2.x + config.boxWidth/2, y: decision2.y + config.boxHeight}, {x: decision3.x + config.boxWidth/2, y: decision3.y}, 'No');
+            
+            // --- Final Output Node ---
+            const endNode = { x: centerX - config.boxWidth / 2, y: config.height - config.padding - config.boxHeight };
+            drawShape(endNode.x, endNode.y, config.boxWidth, config.boxHeight, config.endColor, config.endBorder, 'Print Result<br>to Console');
+
+            // --- Side Branches & Verdicts ---
+            const verdict1 = { x: rightX - config.boxWidth/2, y: decision1.y };
+            drawShape(verdict1.x, verdict1.y, config.boxWidth, config.boxHeight, config.verdictSafeColor, config.verdictSafeBorder, 'Immediate Verdict<br>(BENIGN / MALWARE)');
+            drawArrow({x: decision1.x + config.boxWidth, y: decision1.y + config.boxHeight/2}, {x: verdict1.x, y: verdict1.y + config.boxHeight/2}, 'Yes');
+            drawArrow({x: verdict1.x + config.boxWidth/2, y: verdict1.y + config.boxHeight}, {x: endNode.x + config.boxWidth/2, y: endNode.y});
+
+            const verdict2 = { x: rightX - config.boxWidth/2, y: decision2.y };
+            drawShape(verdict2.x, verdict2.y, config.boxWidth, config.boxHeight, config.verdictSafeColor, config.verdictSafeBorder, 'Classify via ML<br>(BENIGN / MALWARE)');
+            drawArrow({x: decision2.x + config.boxWidth, y: decision2.y + config.boxHeight/2}, {x: verdict2.x, y: verdict2.y + config.boxHeight/2}, 'Yes');
+            drawArrow({x: verdict2.x + config.boxWidth/2, y: verdict2.y + config.boxHeight}, {x: endNode.x + config.boxWidth/2, y: endNode.y});
+
+            const verdictHTTPS = { x: leftX - config.boxWidth/2, y: decision3.y };
+            drawShape(verdictHTTPS.x, verdictHTTPS.y, config.boxWidth, config.boxHeight, config.verdictSafeColor, config.verdictSafeBorder, 'Classify: LIKELY SAFE');
+            drawArrow({x: decision3.x, y: decision3.y + config.boxHeight/2}, {x: verdictHTTPS.x + config.boxWidth, y: verdictHTTPS.y + config.boxHeight/2}, 'HTTPS');
+            drawArrow({x: verdictHTTPS.x + config.boxWidth/2, y: verdictHTTPS.y + config.boxHeight}, {x: endNode.x + config.boxWidth/2, y: endNode.y});
+            
+            const verdictHTTP = { x: rightX - config.boxWidth/2, y: decision3.y };
+            drawShape(verdictHTTP.x, verdictHTTP.y, config.boxWidth, config.boxHeight, config.verdictUnsafeColor, config.verdictUnsafeBorder, 'Classify: NOT SAFE');
+            drawArrow({x: decision3.x + config.boxWidth, y: decision3.y + config.boxHeight/2}, {x: verdictHTTP.x, y: verdictHTTP.y + config.boxHeight/2}, 'HTTP');
+            drawArrow({x: verdictHTTP.x + config.boxWidth/2, y: verdictHTTP.y + config.boxHeight}, {x: endNode.x + config.boxWidth/2, y: endNode.y});
+        };
+    </script>
+</body>
+</html>
