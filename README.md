@@ -35,7 +35,7 @@ Build a software solution for a college campus that:
 
 ### Network Threat Listener (Python)
 - **Real-time passive listener** that logs DNS/HTTP/HTTPS domain visits from the client machine or gateway.
-- Classification of domains as **benign/unsafe** using DNS-level and lexical features, including:
+- Classification of domains as **benign/unsafe/Malware/safe** using DNS-level and lexical features, including:
     - Entropy of the domain name
     - SPF/DKIM/DMARC presence
     - MX/TXT record availability
