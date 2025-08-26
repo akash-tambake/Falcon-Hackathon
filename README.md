@@ -43,7 +43,7 @@ Build a software solution for a college campus that:
 - Writes structured records to **PostgreSQL** for the manager portal.
 - For the hackathon demo, runs on a **laptop hotspot** instead of campus Wi-Fi.
 
-### Domain Feature Scraper (No training required)
+### Domain Feature Scraper
 - Script to automaticßally discover websites by crawling from seed URLs.
 - Emits a **CSV** with the exact DNS/lexical feature columns used by the network listener pipeline.
 - Useful for creating synthetic domain datasets and testing the pipeline end-to-end without hitting the live listener.
